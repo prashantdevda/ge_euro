@@ -9,7 +9,6 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.GeneralSecurityException;
 import java.util.Iterator;
-import java.util.Scanner;
 
 import javax.net.ssl.HttpsURLConnection;
 import javax.net.ssl.SSLContext;
@@ -22,32 +21,37 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 /**
- * @author Prashant
- *	GoEuroClient {@link GoEuroClient} 
- *	A utility to get data from remote API and store data in .csv file  
+ * @author Prashant GoEuroClient {@link GoEuroClient} A utility to get data from
+ *         remote API and store data in .csv file
  */
 public class GoEuroClient {
-	
+
 	public static final String fileExt = ".csv";
 	public static final String spliter = ",";
 	public static final String nextLine = "\n";
-	public static final String header = "_type"+spliter+"_id"+spliter+"name"+spliter+"type"+spliter+"latitude"+spliter+"longitude"+nextLine;
-	public static String inputString;
-
-	public static Scanner scanner;
-	
-	static {
-		scanner = new Scanner(System.in);
-	}
+	public static final String header = "_type" + spliter + "_id" + spliter
+			+ "name" + spliter + "type" + spliter + "latitude" + spliter
+			+ "longitude" + nextLine;
 
 	public static void main(String[] args) {
-		connectToApi();
+
+		if (isOnlyCharacter(args[0].trim()) && args[0].trim().length() != 0) {
+			connectToApi(args[0]);
+		} else {
+			System.err
+					.println("Invalid Input !! Empty String, Numbers and special characters are not allowed.");
+		}
+
+	}
+
+	private static boolean isOnlyCharacter(String s) {
+		return s.matches("[a-zA-Z\\s]{" + s.length() + "}");
 	}
 
 	/**
-	 * Connect to the JSON API 
+	 * Connect to the JSON API
 	 */
-	private static void connectToApi() {
+	private static void connectToApi(String inString) {
 		TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
 			public java.security.cert.X509Certificate[] getAcceptedIssuers() {
 				return null;
@@ -63,7 +67,7 @@ public class GoEuroClient {
 		} };
 
 		try {
-			inputString = getString();
+			String inputString = inString;
 
 			SSLContext sc = SSLContext.getInstance("SSL");
 			sc.init(null, trustAllCerts, new java.security.SecureRandom());
@@ -77,7 +81,7 @@ public class GoEuroClient {
 			HttpsURLConnection connection = (HttpsURLConnection) url
 					.openConnection();
 
-			getData(connection);
+			getData(connection, inputString);
 
 		} catch (MalformedURLException e) {
 			e.printStackTrace();
@@ -89,33 +93,25 @@ public class GoEuroClient {
 	}
 
 	/**
-	 * @return String 
-	 * Takes input string
+	 * @param connection
+	 *            HttpsURLConnection Get data from JSON API as String
+	 * @param inputString
 	 */
-	public static String getString() {
-		System.out.println("Please Enter The String");
-		String string = scanner.next();
-		return string;
-	}
-
-	/**
-	 * @param connection HttpsURLConnection
-	 * Get data from JSON API as String  
-	 */
-	private static void getData(HttpsURLConnection connection) {
+	private static void getData(HttpsURLConnection connection,
+			String inputString) {
 		if (connection != null) {
 
 			try {
 				BufferedReader br = new BufferedReader(new InputStreamReader(
 						connection.getInputStream()));
-				String input;				
+				String input;
 				while ((input = br.readLine()) != null) {
 					writeToCsv(input, inputString);
 				}
 				br.close();
-			} catch(FileNotFoundException e){
-				System.err.println("Input String is not valid !! :-> " + inputString);
-				e.printStackTrace();
+			} catch (FileNotFoundException e) {
+				System.err.println("Input String is not valid !! :-> "
+						+ inputString);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -123,13 +119,13 @@ public class GoEuroClient {
 	}
 
 	/**
-	 * @param input 
-	 * @param fileName name of csv file.
-	 * Default place of file is C: drive. 
+	 * @param input
+	 * @param fileName
+	 *            name of csv file. Default place of file is C: drive.
 	 */
 	@SuppressWarnings("rawtypes")
 	private static void writeToCsv(String input, String fileName) {
-		
+
 		JSONParser parser = new JSONParser();
 		Object object;
 		try {
@@ -138,34 +134,36 @@ public class GoEuroClient {
 			JSONArray results = (JSONArray) jsonObject.get("results");
 			StringBuffer writeToFile = new StringBuffer();
 			writeToFile.append(header);
-			if (results.size()!= 0) {
-				FileWriter fileWriter = new FileWriter("c:\\"+fileName+fileExt);
+			if (results.size() != 0) {
+				FileWriter fileWriter = new FileWriter("c:\\" + fileName
+						+ fileExt);
 				for (Iterator iterator = results.iterator(); iterator.hasNext();) {
 					JSONObject jsonRow = (JSONObject) iterator.next();
-					JSONObject geo_position = (JSONObject) jsonRow.get("geo_position");
-					writeToFile.append(jsonRow.get("_type")+spliter);
-					writeToFile.append(jsonRow.get("_id")+spliter);
-					String temp = "\""+jsonRow.get("name").toString()+"\"";
-					writeToFile.append(temp+spliter);
-					writeToFile.append(jsonRow.get("type")+spliter);
-					writeToFile.append(geo_position.get("latitude")+spliter);
-					writeToFile.append(geo_position.get("longitude")+nextLine);
+					JSONObject geo_position = (JSONObject) jsonRow
+							.get("geo_position");
+					writeToFile.append(jsonRow.get("_type") + spliter);
+					writeToFile.append(jsonRow.get("_id") + spliter);
+					String temp = "\"" + jsonRow.get("name").toString() + "\"";
+					writeToFile.append(temp + spliter);
+					writeToFile.append(jsonRow.get("type") + spliter);
+					writeToFile.append(geo_position.get("latitude") + spliter);
+					writeToFile
+							.append(geo_position.get("longitude") + nextLine);
 				}
 				fileWriter.append(writeToFile.toString());
 				fileWriter.flush();
-				fileWriter.close();				
-			}else {
-				System.out.println("No data available !!");
-				connectToApi();
+				fileWriter.close();
+				System.out
+						.println("File is Successfuly crested!! you can check at : c:\\"
+								+ fileName + fileExt);
+			} else {
+				System.err.println("Invalid input please try again");
 			}
-			
-		} catch (ParseException e) {			
+
+		} catch (ParseException e) {
 			e.printStackTrace();
-		} catch (IOException e) {			
+		} catch (IOException e) {
 			e.printStackTrace();
-		}
-		finally{
-			scanner.close();
 		}
 	}
 
