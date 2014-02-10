@@ -21,8 +21,9 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 /**
- * @author Prashant GoEuroClient {@link GoEuroClient} A utility to get data from
- *         remote API and store data in .csv file
+ * @author Prashant 
+ * GoEuroClient {@link GoEuroClient} A utility to get data 
+ * from remote API and store data in .csv file
  */
 public class GoEuroClient {
 
@@ -44,6 +45,10 @@ public class GoEuroClient {
 
 	}
 
+	/**
+	 * @param s String 
+	 * @return true if string has only characters
+	 */
 	private static boolean isOnlyCharacter(String s) {
 		return s.matches("[a-zA-Z\\s]{" + s.length() + "}");
 	}
@@ -95,7 +100,7 @@ public class GoEuroClient {
 	/**
 	 * @param connection
 	 *            HttpsURLConnection Get data from JSON API as String
-	 * @param inputString
+	 * @param inputString String which passed as argument. 
 	 */
 	private static void getData(HttpsURLConnection connection,
 			String inputString) {
@@ -104,9 +109,9 @@ public class GoEuroClient {
 			try {
 				BufferedReader br = new BufferedReader(new InputStreamReader(
 						connection.getInputStream()));
-				String input;
-				while ((input = br.readLine()) != null) {
-					writeToCsv(input, inputString);
+				String jsonString;
+				while ((jsonString = br.readLine()) != null) {
+					writeToCsv(jsonString, inputString);
 				}
 				br.close();
 			} catch (FileNotFoundException e) {
@@ -119,17 +124,17 @@ public class GoEuroClient {
 	}
 
 	/**
-	 * @param input
+	 * @param jsonString 
 	 * @param fileName
 	 *            name of csv file. Default place of file is C: drive.
 	 */
 	@SuppressWarnings("rawtypes")
-	private static void writeToCsv(String input, String fileName) {
+	private static void writeToCsv(String jsonString, String fileName) {
 
 		JSONParser parser = new JSONParser();
 		Object object;
 		try {
-			object = parser.parse(input);
+			object = parser.parse(jsonString);
 			JSONObject jsonObject = (JSONObject) object;
 			JSONArray results = (JSONArray) jsonObject.get("results");
 			StringBuffer writeToFile = new StringBuffer();
